@@ -1,0 +1,15 @@
+[package]
+name = "dumbdb-core"
+description = "Core of DumbDB"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+path = "lib.rs"
+
+[[bin]]
+name = "ddb"
+path = "bin/main.rs"

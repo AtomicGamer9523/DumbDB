@@ -1,0 +1,29 @@
+[package]
+name = "dumbdb"
+description = "Database for Dummies"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+path = "lib.rs"
+
+[dependencies.query]
+package = "dumbdb-query"
+optional = true
+path = "query"
+
+[dependencies.base]
+package = "dumbdb-core"
+path = "__core__"
+
+[dependencies.orm]
+package = "dumbdb-orm"
+optional = true
+path = "orm"
+
+[features]
+query = ["dep:query"]
+orm = ["dep:orm"]

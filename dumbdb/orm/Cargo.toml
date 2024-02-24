@@ -1,0 +1,15 @@
+[package]
+name = "dumbdb-orm"
+description = "ORM for DumbDB"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+path = "lib.rs"
+
+[dependencies.base]
+package = "dumbdb-core"
+path = "../__core__"

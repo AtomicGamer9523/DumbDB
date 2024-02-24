@@ -1,0 +1,17 @@
+[workspace]
+resolver = "2"
+members = [
+    "dumbdb/__core__",
+    "dumbdb/query",
+    "dumbdb/orm",
+    "dumbdb",
+]
+
+[workspace.package]
+edition = "2021"
+version = "0.1.0"
+authors = [
+    "Матвей Т <https://matveit.dev> AtomicGamer9523@github"
+]
+license = "MIT"
+repository = "https://github.com/AtomicGamer9523/DumbDB"
