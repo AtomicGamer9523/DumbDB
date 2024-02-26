@@ -8,3 +8,11 @@ pub use ::ddb::*;
 
 #[cfg(feature = "standalone")]
 pub use bin;
+
+#[doc(hidden)]
+#[cfg(feature = "embed-python")]
+#[path = "__bindings__/python.rs"]
+pub mod python_embed;
+#[doc(hidden)]
+#[cfg(feature = "embed-python")]
+pub use python_embed::dumbdb;

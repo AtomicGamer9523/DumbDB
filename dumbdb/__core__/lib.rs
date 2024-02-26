@@ -5,6 +5,9 @@ use ::core::fmt;
 
 extern crate alloc;
 
+#[cfg(feature = "pyo3")]
+mod python_bindings;
+
 mod error;
 #[cfg(feature = "export-builtin-impl")]
 mod builtin_impl;
@@ -12,6 +15,11 @@ mod builtin_impl;
 pub use error::{DumbError, DumbResult};
 #[cfg(feature = "export-builtin-impl")]
 pub use builtin_impl::DumbDB;
+
+#[doc(hidden)]
+pub mod internal_handlers {
+    pub use super::builtin_impl::{DumbDBHandler, DumbDBWriteHandler};
+}
 
 pub trait DumbDataBase<K, V> where
     K: DumbKey,
@@ -27,8 +35,8 @@ pub trait DumbDataBaseReadHandler<K, V> where
     K: DumbKey,
     V: DumbValue
 {
-    fn get(&self, key: K) -> Option<&V>;
-    fn contains(&self, key: K) -> bool;
+    fn get(&self, key: K) -> DumbResult<Option<&V>>;
+    fn contains(&self, key: K) -> DumbResult<bool>;
 }
 
 pub trait DumbDataBaseWriteHandler<K, V> where
@@ -36,8 +44,8 @@ pub trait DumbDataBaseWriteHandler<K, V> where
     K: DumbKey,
     V: DumbValue
 {
-    fn set(&self, key: K, value: V);
-    fn delete(&self, key: K);
+    fn set(&self, key: K, value: V) -> DumbResult;
+    fn delete(&self, key: K) -> DumbResult;
 }
 
 pub trait DumbValue: Sized {

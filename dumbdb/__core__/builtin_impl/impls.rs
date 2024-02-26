@@ -5,12 +5,12 @@ impl<K, V> DumbDataBaseReadHandler<K, V> for DumbDBHandler<K, V> where
     V: DumbValue,
 {
     #[inline]
-    fn get(&self, key: K) -> Option<&V> {
-        unsafe { &*self.0 }.get(key).ok()?
+    fn get(&self, key: K) -> DumbResult<Option<&V>> {
+        unsafe { &*self.0 }.get(key)
     }
     #[inline]
-    fn contains(&self, key: K) -> bool {
-        unsafe { &*self.0 }.contains(key).unwrap_or(false)
+    fn contains(&self, key: K) -> DumbResult<bool> {
+        unsafe { &*self.0 }.contains(key)
     }
 }
 
@@ -19,12 +19,12 @@ impl<K, V> DumbDataBaseReadHandler<K, V> for DumbDBWriteHandler<K, V> where
     V: DumbValue,
 {
     #[inline]
-    fn get(&self, key: K) -> Option<&V> {
-        unsafe { &*self.0 }.get(key).ok()?
+    fn get(&self, key: K) -> DumbResult<Option<&V>> {
+        unsafe { &*self.0 }.get(key)
     }
     #[inline]
-    fn contains(&self, key: K) -> bool {
-        unsafe { &*self.0 }.contains(key).unwrap_or(false)
+    fn contains(&self, key: K) -> DumbResult<bool> {
+        unsafe { &*self.0 }.contains(key)
     }
 }
 
@@ -33,12 +33,12 @@ impl<K, V> DumbDataBaseWriteHandler<K, V> for DumbDBWriteHandler<K, V> where
     V: DumbValue,
 {
     #[inline]
-    fn set(&self, key: K, value: V) {
-        let _ = unsafe { &*self.0 }.set(key, value);
+    fn set(&self, key: K, value: V) -> DumbResult {
+        unsafe { &*self.0 }.set(key, value)
     }
     #[inline]
-    fn delete(&self, key: K) {
-        let _ = unsafe { &*self.0 }.delete(key);
+    fn delete(&self, key: K) -> DumbResult {
+        unsafe { &*self.0 }.delete(key)
     }
 }
 unsafe impl<K, V> Send for DumbDBHandler<K, V> where
