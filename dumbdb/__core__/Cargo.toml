@@ -10,6 +10,5 @@ repository.workspace = true
 [lib]
 path = "lib.rs"
 
-[[bin]]
-name = "ddb"
-path = "bin/main.rs"
+[features]
+export-builtin-impl = []

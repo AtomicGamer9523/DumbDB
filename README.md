@@ -19,6 +19,13 @@ You are able to chain commands together, multiple commands can be written in a s
 
 ### **D**umb **Q**uery **L**anguage
 
+Values are **ONLY** strings.
+Keys are **ONLY** unsigned integers.
+[`TRUE`](#true-and-false) and [`FALSE`](#true-and-false) are booleans,
+and only returned by the [`CONTAINS`](#contains) command.
+[`NULL`](#null) is a special data type that represents the absence of a value,
+and only returned by the [`GET`](#get) command when the key does not exist.
+
 ```sql
 -- This is a comment!
 SET key value
@@ -31,6 +38,7 @@ CLEAR
 ### `SET`
 
 Sets a value to a key.
+Permission Level: `WRITE`
 If the key already exists, it will overwrite the value.
 If the key does not exist, it will create a new key with the value.
 If the value is [`NULL`](#null), it will delete the key.
@@ -38,21 +46,25 @@ If the value is [`NULL`](#null), it will delete the key.
 ### `GET`
 
 Gets a value from a key.
+Permission Level: `READ`
 If the key does not exist, it will return [`NULL`](#null).
 
 ### `DELETE`
 
 Deletes a value from a key.
+Permission Level: `WRITE`
 If the key does not exist, it will do nothing.
 
 ### `CONTAINS`
 
 Checks if a key exists.
+Permission Level: `READ`
 If the key exists, it will return [`TRUE`](#true-and-false), otherwise, it will return [`FALSE`](#true-and-false).
 
 ### `CLEAR`
 
 Deletes all keys and values from the database.
+Permission Level: `ADMIN`
 This action is dangerous and permanent, use with caution.
 
 ### `TRUE` and `FALSE`
@@ -63,26 +75,15 @@ They are case-insensitive.
 ### `NULL`
 
 [`NULL`](#null) is a special data type that represents the absence of a value.
-It can only be returned by the `GET` command when the key does not exist.
+It can only be returned by the [`GET`] command when the key does not exist.
 Setting a key to [`NULL`](#null) is equivalent to deleting the key.
 
 ## Examples
 
 ### Example (Python)
 
-Query:
-
 ```python
-from dumbdb.query import DumbDB
-
-db = DumbDBQuery("messages")
-db.query("SET 0 {'content': 'Hello', 'user_id': 0}")
-```
-
-ORM:
-
-```python
-from dumbdb.orm import DumbDB
+from dumbdb import DumbDB
 
 class Message:
     def __init__(self, content: str, user_id: int):
@@ -100,19 +101,6 @@ db.clear()
 ```
 
 ### Example (Rust)
-
-Query:
-
-```rust
-use dumbdb::DumbDB;
-
-fn main() {
-    let mut db = DumbDB::new("messages");
-    db.query("SET 0 {'content': 'Hello', 'user_id': 0}");
-}
-```
-
-ORM:
 
 ```rust
 use dumbdb::DumbDB;

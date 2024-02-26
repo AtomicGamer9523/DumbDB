@@ -9,21 +9,35 @@ repository.workspace = true
 
 [lib]
 path = "lib.rs"
+name = "dumbdb"
 
-[dependencies.query]
-package = "dumbdb-query"
-optional = true
-path = "query"
+[[bin]]
+required-features = ["standalone"]
+path = "bin.rs"
+name = "dumbdb"
 
-[dependencies.base]
+[[example]]
+name = "example"
+path = "../example.rs"
+
+[dependencies.ddb]
 package = "dumbdb-core"
 path = "__core__"
 
-[dependencies.orm]
-package = "dumbdb-orm"
+[dependencies.bin]
+package = "dumbdb-bin"
+path = "__core__/bin"
 optional = true
-path = "orm"
 
 [features]
-query = ["dep:query"]
-orm = ["dep:orm"]
+default = ["embed"]
+
+# Embeddable
+embed = ["ddb/export-builtin-impl"]
+# Embeddable (python bindings)
+embed-python = ["embed"]
+# Embeddable (deno bindings)
+embed-deno = ["embed"]
+
+# Standalone (binary)
+standalone = ["dep:bin"]

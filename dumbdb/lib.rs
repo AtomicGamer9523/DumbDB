@@ -1,7 +1,10 @@
-pub use ::base::*;
+#[cfg(all(
+    not(feature = "embed"),
+    not(feature = "standalone"),
+))]
+compile_error!("At least one of the features 'embed' or 'standalone' must be enabled");
 
-#[cfg(feature = "query")]
-pub use ::query::DumbDB;
+pub use ::ddb::*;
 
-#[cfg(feature = "orm")]
-pub use ::orm::DumbDB;
+#[cfg(feature = "standalone")]
+pub use bin;

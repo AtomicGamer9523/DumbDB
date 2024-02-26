@@ -1,5 +1,4 @@
-#![no_std]
-
+#[cfg(feature = "export-builtin-impl")]
 use ::alloc::collections::BTreeMap as Map;
 use ::core::result::Result as R;
 use ::alloc::string::ToString;
@@ -9,121 +8,46 @@ use ::core::fmt;
 extern crate alloc;
 
 mod error;
-pub use error::{Error, Result};
+#[cfg(feature = "export-builtin-impl")]
+mod builtin_impl;
 
-pub trait DumbDataBase<'a, V> {
-    fn set(&mut self, key: &'a str, value: V);
-    fn get(&self, key: &'a str) -> Option<&V>;
-    fn delete(&mut self, key: &'a str);
-    fn contains(&self, key: &'a str) -> bool;
-    fn clear(&mut self);
-}
+pub use error::{DumbError, DumbResult};
+#[cfg(feature = "export-builtin-impl")]
+pub use builtin_impl::DumbDB;
 
-pub trait DumbDBValue: FromStr + ToString {}
-impl<T: FromStr + ToString> DumbDBValue for T {}
-
-pub struct DumbInMemoryStorage<'a, V>(Map<&'a str, V>);
-
-impl<'a, V> DumbInMemoryStorage<'a, V> {
-    #[inline]
-    pub fn new() -> Self {
-        Self(Map::new())
-    }
-}
-
-impl<'a, V> DumbInMemoryStorage<'a, V> where
-    V: DumbDBValue
+pub trait DumbDataBase<K, V> where
+    K: DumbKey,
+    V: DumbValue,
 {
-    pub fn construct(s: &'a str) -> Result<Self> {
-        let mut map = Map::new();
-        for line in s.lines() {
-            // Ensure there is ONLY one '=' in the line
-            let mut count = 0;
-            for c in line.chars() {
-                if c == '=' {
-                    count += 1;
-                }
-            }
-            if count != 1 {
-                return Err(Error::ParsingError("Line contains more than one '=' character"));
-            }
-
-            // Split the line into key and value
-            let mut parts = line.splitn(2, '=');
-
-            // Get the key
-            let key = parts.next().ok_or(Error::ParsingError("Line doesn't contain a key"))?.trim();
-
-            // Get & Validate the value
-            let value = parts.next().ok_or(Error::ParsingError("Line doesn't contain a value"))?.trim();
-            let value = V::from_str(value).map_err(|_| Error::ParsingError("Failed to parse value"))?;
-
-            // Insert the key-value pair into the map
-            map.insert(key, value);
-        }
-        Ok(Self(map))
-    }
+    type Handler: DumbDataBaseReadHandler<K, V>;
+    type WriteHandler: DumbDataBaseWriteHandler<K, V>;
+    fn new_handler(&self) -> Self::Handler;
+    fn new_write_handler(&self) -> Self::WriteHandler;
 }
 
-impl<'a, V> DumbDataBase<'a, V> for DumbInMemoryStorage<'a, V> {
-    #[inline]
-    fn set(&mut self, key: &'a str, value: V) {
-        self.0.insert(key, value);
-    }
-    #[inline]
-    fn get(&self, key: &'a str) -> Option<&V> {
-        self.0.get(key)
-    }
-    #[inline]
-    fn delete(&mut self, key: &'a str) {
-        self.0.remove(key);
-    }
-    #[inline]
-    fn contains(&self, key: &'a str) -> bool {
-        self.0.contains_key(key)
-    }
-    #[inline]
-    fn clear(&mut self) {
-        self.0.clear();
-    }
+pub trait DumbDataBaseReadHandler<K, V> where
+    K: DumbKey,
+    V: DumbValue
+{
+    fn get(&self, key: K) -> Option<&V>;
+    fn contains(&self, key: K) -> bool;
 }
 
-// impl ::core::fmt::Debug for DumbDBBase<()> {
-//     fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
-//         f.debug_struct("DumbDBBase")
-//             .field("name", &self.name)
-//             .field("items", &self.data)
-//             .finish()
-//     }
-// }
+pub trait DumbDataBaseWriteHandler<K, V> where
+    Self: DumbDataBaseReadHandler<K, V>,
+    K: DumbKey,
+    V: DumbValue
+{
+    fn set(&self, key: K, value: V);
+    fn delete(&self, key: K);
+}
 
-// impl<V> DumbDBBase<V> where
-//     V: DumbDBValue
-// {
-//     pub fn new<Name: ToString>(name: Name) -> Result<DumbDBBase<V>> {
-//         // Opening / Creating database file
-//         let file;
-//         let filename = format!("{}.dumb.db", name.to_string());
-//         match File::open(filename.clone()) {
-//             Err(e) => {
-//                 if e.kind() != std::io::ErrorKind::NotFound {
-//                     return Err(Error::DBOpenError);
-//                 }
-//                 match File::create(filename) {
-//                     Err(_) => return Err(Error::DBCreateError),
-//                     Ok(f) => file = f,
-//                 }
-//             },
-//             Ok(f) => file = f,
-//         }
-// 
-//         // Attempt to load data from file
-// 
-// 
-//         Ok(DumbDBBase {
-//             data: Map::new(),
-//             file_handle: file,
-//             name: name.to_string(),
-//         })
-//     }
-// }
+pub trait DumbValue: Sized {
+    fn deserialize(vec: &Vec<u8>) -> DumbResult<Self>;
+    fn serialize(&self) -> Vec<u8>;
+}
+pub trait DumbKey: DumbValue + Ord { }
+
+impl<V> DumbKey for V where
+    V: DumbValue + Ord
+{ }
