@@ -1,8 +1,6 @@
 #[cfg(feature = "export-builtin-impl")]
 use ::alloc::collections::BTreeMap as Map;
 use ::core::result::Result as R;
-use ::alloc::string::ToString;
-use ::core::str::FromStr;
 use ::core::fmt;
 
 extern crate alloc;

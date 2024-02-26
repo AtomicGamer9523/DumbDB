@@ -66,39 +66,45 @@ impl<K, V> DumbDataBase<K, V> for DumbDB<K, V> where
     }
 }
 
-macro_rules! impl_key_for {
-    ($($t:ty),*) => {
-        $(
-            impl DumbKey for $t { }
-        )*
-    };
-}
-
-fn digits_u32(n: u32) -> Vec<u8> {
-    fn x_inner(n: u32, xs: &mut Vec<u8>) {
-        if n >= 10 {
-            x_inner(n / 10, xs);
-        }
-        xs.push(n as u8 % 10 + b'0');
-    }
-    let mut xs = Vec::new();
-    x_inner(n, &mut xs);
-    xs
-}
-
-impl DumbValue for u32 {
-    fn deserialize(bytes: &Vec<u8>) -> DumbResult<Self> {
-        let mut n = 0;
-        for byte in bytes {
-            if byte < &b'0' || byte > &b'9' {
-                return Err(DumbError::ParsingError("invalid digit"));
+macro_rules! impl_key_for_num {
+    (
+        $func:ident -> $type:ty
+    ) => (
+        fn $func(n: $type) -> Vec<u8> {
+            fn inner(n: $type, xs: &mut Vec<u8>) {
+                if n >= 10 {
+                    inner(n / 10, xs);
+                }
+                xs.push(n as u8 % 10 + b'0');
             }
-            let number_from_byte = byte - b'0';
-            n = n * 10 + number_from_byte as u32;
+            let mut xs = Vec::new();
+            inner(n, &mut xs);
+            xs
         }
-        Ok(n)
-    }
-    fn serialize(&self) -> Vec<u8> {
-        digits_u32(*self)
-    }
+        
+        impl DumbValue for $type {
+            fn deserialize(bytes: &Vec<u8>) -> DumbResult<Self> {
+                let mut n = 0;
+                for byte in bytes {
+                    if byte < &b'0' || byte > &b'9' {
+                        return Err(DumbError::ParsingError("invalid digit"));
+                    }
+                    let number_from_byte = byte - b'0';
+                    n = n * 10 + number_from_byte as $type;
+                }
+                Ok(n)
+            }
+            #[inline]
+            fn serialize(&self) -> Vec<u8> {
+                $func(*self)
+            }
+        }
+    );
 }
+
+impl_key_for_num!(serialize_u8 -> u8);
+impl_key_for_num!(serialize_u16 -> u16);
+impl_key_for_num!(serialize_u32 -> u32);
+impl_key_for_num!(serialize_u64 -> u64);
+impl_key_for_num!(serialize_u128 -> u128);
+impl_key_for_num!(serialize_usize -> usize);
