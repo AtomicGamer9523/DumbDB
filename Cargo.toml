@@ -14,3 +14,49 @@ authors = [
 ]
 license = "MIT"
 repository = "https://github.com/AtomicGamer9523/DumbDB"
+
+[package]
+name = "dumbdb"
+description = "Database for Dummies"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+crate-type = ["rlib", "cdylib"]
+path = "dumbdb/lib.rs"
+name = "dumbdb"
+
+[[bin]]
+required-features = ["standalone"]
+path = "dumbdb/bin.rs"
+name = "dumbdb"
+
+[dependencies.ddb] # Core
+package = "dumbdb-core"
+path = "__core__"
+
+[dependencies.bin] # Standalone Binary
+package = "dumbdb-bin"
+path = "__core__/bin"
+optional = true
+
+[dependencies.pyo3] # Python Bindings
+features = ["abi3-py38"]
+version = "0.20"
+optional = true
+
+[features]
+default = ["embed-python"]
+
+# Embeddable
+embed = ["ddb/export-builtin-impl"]
+# Embeddable (python bindings)
+embed-python = ["embed", "ddb/pyo3", "dep:pyo3"]
+# Embeddable (deno bindings)
+embed-deno = ["embed"]
+
+# Standalone (binary)
+standalone = ["dep:bin"]
