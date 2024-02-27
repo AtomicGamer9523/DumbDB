@@ -1,5 +1,15 @@
+[project]
+name = "dumbdbpy"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+]
+dynamic = ["version"]
+
 [build-system]
-requires = ["maturin>=1.0,<2.0"]
+requires = ["maturin>=1.4,<2.0"]
 build-backend = "maturin"
 
 [tool.maturin]

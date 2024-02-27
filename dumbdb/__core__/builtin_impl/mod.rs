@@ -9,12 +9,12 @@ mod memory;
 mod impls;
 
 use memory::Memory;
+use std::path::PathBuf;
 
 #[derive(Debug)]
 struct DumbDBInner<K: DumbKey, V: DumbValue> {
-    file_handle: File,
     memory: Memory<K, V>,
-    name: String,
+    file_path: PathBuf,
 }
 
 #[repr(transparent)]
@@ -37,7 +37,7 @@ impl<K: DumbKey, V: DumbValue> DumbDB<K, V> {
     pub fn init<Name>(&self, name: Name) -> DumbResult where
         Name: fmt::Display
     {
-        let name = format!("{name}.dumb.db");
+        let file_path: PathBuf = format!("{name}.dumb.db").into();
         if self.is_init() {
             return Err(DumbError::DBAlreadyInitialized);
         }
@@ -47,17 +47,10 @@ impl<K: DumbKey, V: DumbValue> DumbDB<K, V> {
         open_options.write(false);
         open_options.create(false);
         open_options.truncate(false);
-        if let Ok(mut f) = open_options.open(&name) {
+        if let Ok(mut f) = open_options.open(&file_path) {
             memory.load(&mut f)?;
         }
-        open_options.write(true);
-        open_options.create(true);
-        open_options.truncate(true);
-        let file_handle = match open_options.open(&name) {
-            Err(_) => return Err(DumbError::DBOpenError),
-            Ok(f) => f,
-        };
-        let inner = DumbDBInner { memory, file_handle, name };
+        let inner = DumbDBInner { memory, file_path };
         unsafe { *self.0.get() = Some(inner) };
         Ok(())
     }
@@ -68,7 +61,16 @@ impl<K: DumbKey, V: DumbValue> DumbDB<K, V> {
         let inner = unsafe {
             (&mut *self.0.get()).as_mut().unwrap_unchecked()
         };
-        inner.memory.save(&mut inner.file_handle)?;
+        let mut open_options = File::options();
+        open_options.read(true);
+        open_options.write(true);
+        open_options.create(true);
+        open_options.truncate(true);
+        let mut file_handle = match open_options.open(&inner.file_path) {
+            Err(_) => return Err(DumbError::DBOpenError),
+            Ok(f) => f,
+        };
+        inner.memory.save(&mut file_handle)?;
         Ok(())
     }
     pub fn get(&self, key: K) -> DumbResult<Option<&V>> {
@@ -107,7 +109,7 @@ impl<K, V> fmt::Debug for DumbDB<K, V> where
             let inner = unsafe { (&*self.0.get()).as_ref().unwrap_unchecked() };
             f.debug_struct("DumbDB")
                 .field("initilized", &true)
-                .field("name", &inner.name)
+                .field("name", &inner.file_path)
                 .finish()
         } else {
             f.debug_struct("DumbDB")
