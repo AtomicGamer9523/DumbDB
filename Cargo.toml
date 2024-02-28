@@ -1,9 +1,9 @@
 [workspace]
 resolver = "2"
 members = [
-    "dumbdb/__core__",
     "dumbdb/__core__/bin",
-    "dumbdb",
+    "dumbdb/__core__",
+    "."
 ]
 
 [workspace.package]
@@ -36,11 +36,11 @@ name = "dumbdb"
 
 [dependencies.ddb] # Core
 package = "dumbdb-core"
-path = "__core__"
+path = "dumbdb/__core__"
 
 [dependencies.bin] # Standalone Binary
 package = "dumbdb-bin"
-path = "__core__/bin"
+path = "dumbdb/__core__/bin"
 optional = true
 
 [dependencies.pyo3] # Python Bindings
