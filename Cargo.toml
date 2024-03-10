@@ -49,7 +49,7 @@ version = "0.20"
 optional = true
 
 [features]
-default = ["embed-python"]
+default = ["embed"]
 
 # Embeddable
 embed = ["ddb/export-builtin-impl"]
